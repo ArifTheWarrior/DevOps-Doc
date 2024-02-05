@@ -1,0 +1,62 @@
+Load Balancer:
+===============
+apt-get install software-properties-common
+
+add-apt-repository ppa:vbernat/haproxy-2.0 
+
+apt-get install haproxy=2.0\*
+
+vi /etc/haproxy/haproxy.cfg 
+
+
+global 
+ 
+#Default ssl material locations
+
+ca-base /etc/ssl/certs
+crt-base /etc/ssl/private 
+tune.ssl.default-dh-param 2048
+
+
+
+
+backend webapps_backends
+balance roundrobin 
+server test.webserver1.com 192.168.150.132:80 check 
+
+
+frontend lb_01
+stats uri /haproxy?stats
+bind 192.168.150.134:443 ssl crt /etc/ssl/certs/haproxy.pem
+default_backend webapps_backends 
+
+
+listen stats
+	bind 192.168.150.134:443 ssl crt /etc/ssl/certs/haproxy.pem 
+        stats enable     #enable statistics reports 
+	stats hide-version #Hide the version of HAproxy
+	stats refresh 30s  #HAproxy refresh time 
+	stats show-node   # shows the hostname of the node
+	stats auth admin:p@ssword #Authentication for stats page 
+	stats uri /lb_stats #statistics URL
+ 
+
+
+
+
+
+
+openssl genrsa -out /etc/ssl/private/haproxy.key 2048
+
+
+openssl req -new -key /etc/ssl/private/haproxy.key -out /etc/ssl/certs/haproxy.csr
+
+openssl x509 -req -days 365 -in /etc/ssl/certs/haproxy.csr -signkey /etc/ssl/private/haproxy.key -out /etc/ssl/certs/haproxy.crt
+
+
+cat /etc/ssl/private/haproxy.key /etc/ssl/certs/haproxy.crt >> /etc/ssl/certs/haproxy.pem
+
+haproxy -c -f /etc/haproxy/haproxy.cfg
+
+ 
+

@@ -1,0 +1,220 @@
+                                     Docker File
+                          =======================================
+
+
+Use Dockerfile and create Docker images automatically.
+It is also useful for configuration management. 
+
+.> Single file
+.> Run images
+
+Task:Create a Dockerfile that Apache httpd is installed and started
+====
+
+
+[root@node Dockerfile]# ls
+Dockerfile
+
+[root@node Dockerfile]# cat Dockerfile
+# create new
+
+FROM centos:7
+MAINTAINER ServerWorld <admin@srv.world>
+
+RUN yum install httpd -y
+RUN echo "Dockerfile Test on Aapche httpd" > /var/www/html/index.html
+
+EXPOSE 80
+CMD ["-D", "FOREGROUND"]
+ENTRYPOINT ["/usr/sbin/httpd"]
+
+docker build -t arifthewarriors/centos-httpd:latest ./
+
+docker run -d -p 8081:80 arifthewarriors/doc_file
+
+
+
+INSTRUCTION 	Description
+FROM 	iIt sets the Base Image for subsequent instructions.
+MAINTAINER 	It sets the Author field of the generated images.
+RUN 	It will execute any commands when Docker image will be created.
+CMD 	It will execute any commands when Docker container will be executed.
+ENTRYPOINT 	It will execute any commands when Docker container will be executed.
+LABEL 	It adds metadata to an image.
+EXPOSE 	It informs Docker that the container will listen on the specified network ports at runtime.
+ENV 	It sets the environment variable.
+ADD 	It copies new files, directories or remote file URLs.
+COPY 	It copies new files or directories.
+The differences of [ADD] are that it's impossible to specify remore URL and also it will not extract archive files automatically.
+VOLUME 	It creates a mount point with the specified name and marks it as holding externally mounted volumes from native host or other containers
+USER 	It sets the user name or UID.
+WORKDIR 	It sets the working directory.
+
+Docker : Use External Storage:
+==============================
+# create a directory for containers data
+[root@node ~]# mkdir -p /var/lib/docker/disk01
+[root@node ~]# echo "persistent storage" >> /var/lib/docker/disk01/testfile.txt
+
+curl --head -H "Authorization: Bearer ${TOKEN}" "https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest"
+
+docker run -it -v  /var/lib/docker/disk01:/mnt centos /bin/bash
+[root@63f18bd78f42 /]# df -hT
+[root@63f18bd78f42 /]# cat /mnt/testfile.txt
+persistent storage
+
+
+Task1: 	It's also possible to configure external storage by Docker Data Volume command
+======
+[root@node ~]# docker volume  create volumne01
+volumne01
+
+[root@node ~]# docker volume ls
+DRIVER    VOLUME NAME
+local     volumne01
+
+[root@node ~]# docker volume inspect volumn01
+
+# run a container with mounting [volume01] to [/mnt] on container
+[root@node ~]# docker run -it -v volumne01:/mnt centos
+[root@a3a16aacc482 /]# df -hT /mnt
+[root@72d48dd50b1d /]# echo "Docker Voulme test" > /mnt/testfile.txt
+[root@72d48dd50b1d /]# exit
+exit
+[root@node ~]# cat /var/lib/docker/volumes/volumne01/_data/testfile.txt
+Docker Voulme test
+
+
+```
+# possible to mount from other containers
+
+[root@dlp ~]# docker run -v volume01:/var/volume01 centos /usr/bin/cat /var/volume01/testfile.txt
+
+Docker Volume test
+
+```
+
+
+[root@node ~]# docker volume rm volumn01
+volumn01
+
+
+
+```
+
+# if some containers are using the volume you'd like to remove like above,
+
+# it needs to remove target containers before removing a volume
+
+[root@dlp ~]# docker rm 405c1c283bc2e8dca69ee997b27f416cbb92fa79020200bb81487e3995087579
+
+[root@dlp ~]# docker rm 2891a2fd78232b80fce78aaa38531abc24c926496a3c0670690bdca595b3b9b7
+
+
+```
+
+[root@node ~]# docker volume rm volumn01
+volumn01
+
+
+
+Docker : Use External Storage (NFS) X
+
+
+Docker Compose: Create a image web and dB
+===============
+curl -L https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose 
+chmod 755 /usr/local/bin/docker-compose 
+docker-compose --version 
+[root@node ~]# cd Dockerfile/
+[root@node Dockerfile]# vi Dockerfile
+FROM centos:7
+
+# Update the package repositories and install Nginx
+RUN yum -y update && \
+    yum -y install epel-release && \
+    yum -y install nginx && \
+    yum clean all
+
+# Expose port 80 for Nginx
+EXPOSE 80
+
+# Set the default command to start Nginx
+CMD ["/usr/sbin/nginx", "-g", "daemon off;"]
+
+
+[root@node Dockerfile]# vi docker-compose.yml
+
+[root@node Dockerfile]# cat docker-compose.yml
+version: '3'
+services:
+  db:
+    image: mariadb
+    volumes:
+      - /var/lib/docker/disk01:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: cent
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: cent_db
+    ports:
+      - "3306:3306"
+  web:
+    build: .
+    ports:
+      - "80:80"
+    volumes:
+      - /var/lib/docker/disk02:/usr/share/nginx/html
+# buid and run
+docker-compose up -d
+docker ps 
+
+[root@node Dockerfile]# docker exec -it fabc7160056a  bash
+mysql -h 127.0.0.1 -u root -p -e "show variables like 'hostname';" 
+mysql -h 127.0.0.1 -u cent -p -e "show databases;" 
+exit
+echo "Hello Docker Compose World" > /var/lib/docker/disk02/index.html 
+curl 127.0.0.1 
+[root@node Dockerfile]# docker-compose logs
+
+# run any commands inside a container
+# container name is just the one set in [docker-compose.yml]
+
+[root@node Dockerfile]# docker-compose exec db /bin/bash
+
+[root@node Dockerfile]# docker-compose stop
+Stopping dockerfile_db_1  ... done
+Stopping dockerfile_web_1 ... done
+
+
+# start a service alone in application
+# if set dependency, other container starts
+[root@node Dockerfile]# docker-compose up -d web
+Starting dockerfile_web_1 ... done
+
+
+[root@node Dockerfile]# docker-compose ps
+
+
+# remove all containers in application
+# if a container is running, it won't be removed
+
+[root@node Dockerfile]# docker-compose stop
+Stopping dockerfile_web_1 ... done
+[root@node Dockerfile]# docker-compose rm
+Going to remove dockerfile_db_1, dockerfile_web_1
+Are you sure? [yN] y
+Removing dockerfile_db_1  ... done
+Removing dockerfile_web_1 ... done
+
+
+                                  Docker Network 
+                            ========================
+
+docker network ls
+docker network inspect bridge
+# [bridge] is assigned as container network by default
+[root@dlp ~]# docker run centos /usr/sbin/ip route X 
+
+
+

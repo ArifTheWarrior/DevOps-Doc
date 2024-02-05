@@ -1,0 +1,427 @@
+
+
+git==> it alwasy eyes on your file , for what changes on your file
+
+git is a  version control system 
+
+git |--Local=> My machine
+	|--Remote ==> cloud(github)
+
+
+working directory-->Stage-->Local Repository -->cloud  
+===============Local=========================|  Remote 
+
+Git Download:
+
+https://git-scm.com/downloads
+
+
+git bash 
+
+
+mkdir gitone
+
+cd gitone 
+
+touch one.txt (write one)
+touch two.txt (write two)
+
+mkdir myFolder 
+cd myFolder 
+touch three.txt (write three)
+
+
+gitone is my working directory 
+
+cd gitone 
+git init 
+
+
+
+create a repository in github name ase 'gitone'
+and create a two file one.txt and two.txt 
+
+
+change my local directory name gitone to gittwo
+
+and 
+
+back to my base directory and git clone my github gitone directory 
+
+git clone https://github.com/ArifTheWarrior/gitone.git
+
+
+
+cd gitone(remote)
+if i change one.txt, two.txt file 
+
+then write a , git status --> its show modifciation change status 
+
+
+
+working directory to Stage its called--> add       
+
+
+mkdir myFolder (gitone)
+
+cd  myFolder 
+touch three.txt (write something)
+cd ..
+
+back to gitone 
+
+git status 
+
+see that myFolder shows a Untracked , because it creates new 
+
+git add --all (all stage) / git add -A 
+
+git status 
+
+see that all are staged ! somehow I want to unstage , 
+
+git reset 
+
+git status (check )
+
+cd myFolder (gitone sub folder)
+
+git add . (stagged only current folder)
+
+git reset
+
+
+
+in gitone ,
+
+first of all git add -A
+
+delete two.txt 
+
+and create a new file touch four.txt 
+
+check status, git status 
+
+git add * 
+
+see that all are stagged without deleted file 
+
+
+if you want to satge individual file just type git add <file_name> 
+
+
+also use git add *.txt 
+
+
+@@ git stagged only changes not files
+
+
+good practice git add . (all current , and sub folder are stagged)
+
+
+
+Stage to Local Repository called ==> commit 
+
+Stagged to commit:
+==================
+
+git commit -m "I have made some changes to files"
+
+
+
+commit to role back: 
+
+git reset HEAD~
+
+
+some how I delete gitone two.txt(already commited) file, how I get back this file? 
+
+git add . (stagged)
+
+git reset --hard 
+
+
+(remove+stagged) at a time 
+
+git rm two.txt 
+
+git status 
+
+
+I change my stagged file as two.txt , and also remove my file 
+
+but it is not possible to normal mode
+
+force to delete: 
+
+git rm two.txt -f 
+
+
+
+
+
+I change my stagged file as two.txt , and also remove my file 
+
+git rm --cached two.txt 
+
+that, changes going to be stagged but actually directory file are same 
+
+git status 
+
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        deleted:    two.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        two.txt
+
+
+Now I work in my untracked files then again commited before
+
+
+
+git rm -r (folder_name) (recursivly delete all sub-folder)
+
+
+
+                  Branch 
+============================================
+
+
+
+git branch 
+
+git branch development 
+
+  development
+* main
+ * means current branch 
+
+
+switch branch:
+
+git checkout development 
+
+touch three.txt(changes something)
+all files are carry out in development as same as main branch 
+
+if i changes in development, effect can't also be main branch 
+
+git add . 
+
+git commit -m "I created three.txt entered three there"
+
+
+
+get  checkout main 
+
+see that doesn.t effect on the main branch change to developmet branch 
+
+
+Again chnages two.txt file in main branch 
+
+git add . 
+
+git commit -m "xyz" 
+
+
+
+
+development merge to main: 
+=========================
+
+
+
+git checkout development 
+
+
+
+git merge main -m "merging on development with main"
+
+
+
+main to development merge:
+==========================
+
+git checkout main 
+
+
+git merge development -m "merging on main with development"
+
+
+
+if two branches people woking/changing a same files ==> merge conflict 
+
+
+gitone> git branch staging 
+
+
+git checkout staging 
+
+changes main branches two.txt files
+
+git status 
+
+
+git add . 
+
+
+git commit -m "xyz"
+
+
+
+git check development 
+
+also changes main branches two.txt 
+
+git add . 
+
+
+git commit -m "xyz"
+
+
+
+
+@@ staging and development all are changing same files(same lines)
+
+
+git checkout development 
+
+
+git  merge staging 
+
+$ git merge staging
+Auto-merging two.txt
+CONFLICT (content): Merge conflict in two.txt
+Automatic merge failed; fix conflicts and then commit the result.
+
+2
+dui
+2
+<<<<<<< HEAD
+3
+=======
+4
+>>>>>>> staging
+
+
+I remove manual one line 3 or 4 ,beacuse of conflicting 
+
+2
+dui
+2
+3
+
+
+git add . 
+
+git commit -m "solved"
+
+
+git checkout staging 
+
+git merge development 
+
+
+
+git checkout main 
+
+git merge staging 
+
+=================================================
+
+
+                   push
+Local repository----------->remote
+                   fetch
+Local respository<-------------remote
+
+
+
+git pull = git fetch + merge (reflect on working directory)
+
+
+
+
+
+git push origin main 
+
+
+git checkout staging 
+
+
+git push origin staging 
+
+
+
+
+
+git checkout development 
+
+git push origin development 
+
+
+
+
+I change in my github main branches files
+
+I want to fetch this change in my working directory 
+
+
+git fetch (main branches)
+git merge 
+
+
+
+git pull used in alternative of git fetch and merge
+
+
+
+====================================================
+
+
+git init -- creates the local repo and initialized 
+git clone link -- creates the clone folder
+git status -- shows modified files
+git add -all - add the directory change to stage
+git add . -- add the specific directory change to stage
+git add * -- add all files change except delete
+git add link -- add specific change file
+git reset -- resets the changes of git add ]
+git commit m "message" - commit the changes
+git reset HEAD~ -- reset all commits
+git branch name -- creates a git branch of the following name
+git checkout name  -- goes to the name branch
+git branch -- lists all the branch
+git merge name -- transfer properities of name to directory
+git push orgin name -- transfer the folder to the online github repo
+git pull -- git fetch plus merge
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

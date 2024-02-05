@@ -1,0 +1,627 @@
+                                   Ansible
+                            =======================
+
+
+
+Ansible is a heart of devops!!
+
+
+Ansible --server and network automation 
+
+
+One central node control all other node{where is server,or anything}
+one central node install one or many service 1 to 100+++ to a server at a time ,
+and instruction written in playbook ,instruction means which service or which server to install which service{http,nignx,php,python etc }
+
+Ansible is a redhat property!!!
+
+
+                   [     ]{controler node}                             
+                   \ \ \ \
+                   Mngtment node 
+
+
+controler node manage the managment node 
+
+
+control node must be install python 
+
+
+controller node --> as a desktop ,laptop,server anything
+
+playbook -->YAML File , command/instruction define on this ,suppose i install httpd service on 100 server to the controller
+node, so this command define on playbook
+
+
+
+Inventory another name is host file 
+
+Inventory/hostfile==> write a managment node ip,group name,how manage managment node
+
+Modules==>every command[instruction] as {playbook} store,and execute in modules
+
+
+Ansible Task module/unit of action in ansible==> single or multiple task execute here,
+
+
+
+Connect Ansible{controller} connect via ssh with managment node,
+always connect root user but if you want to connect unpreviledge user, you will define before 
+
+cli-command ==> adhok command 
+
+
+yum install net-tools bash-completion -y
+yum install epel-release -y 
+yum install ansible -y 
+
+
+configure host file 
+vi /etc/ansible/hosts 
+add my managment node ip address
+
+192.168.29.130
+192.168.29.131
+
+creat ssh key gen : ssh-keygen 
+
+ssh-copy-id root@192.168.29.130
+ssh-copy-id root@192.168.29.131
+
+After this configuration no password to be know rest of the management node configuration 
+
+
+check:
+=====
+
+ansible -m ping all 
+
+
+
+yum install python -y 
+
+Configure Ansible Hosts
+-----------------------
+# vi /etc/ansible/hosts
+
+  [servers]
+  node_1 ansible_host=192.168.0.51 ansible_user=root
+  node_2 ansible_host=192.168.0.52 ansible_user=root
+
+Ping the host using Ansible ping module
+---------------------------------------
+# ansible -m ping all
+# ansible -m ping node_1
+# ansible -m ping node_1
+# ansible -m ping servers
+ansible -m shell -a 'systemctl status httpd' all
+
+Run shell command on all the servers in parallel using the shell module of Ansible
+----------------------------------------------------------------------------------
+# ansible -m shell -a 'yum update -y' all
+# ansible -m shell -a 'yum update -y' servers
+# ansible -m shell -a 'yum install nagios -y' all
+
+Run command on a single host
+----------------------------
+# ansible -m shell -a 'free -h' node_1
+# ansible -m shell -a 'free -h' node_2
+
+master node:
+touch http.yml
+then paste the httpd.YAML file commad 
+
+httpd.YAML {Playbook}
+==========
+
+---
+- name: This sets up an httpd webserver
+  hosts: all
+  tasks:
+  - name: Install apache packages 
+    yum:
+      name: httpd
+      state: present
+  - name: ensure httpd is running
+    service:
+      name: httpd 
+      state: started
+  - name: Open port 80 for http access
+    firewalld:
+      service: http
+      permanent: true
+      state: enabled
+  - name: Restart the firewalld service to load in the firewall changes
+    service: 
+      name: firewalld 
+      state: restarted
+      
+
+ansible-playbook --syntax-check http.yml 
+ansible-playbook -C http.yml
+run playbook: ansible-playbook http.yml
+http://www.yamllint.com/
+
+
+---
+- name: This sets up an httpd webserver
+  hosts: all
+  tasks:
+  - name: Install apache packages 
+    yum:
+      name: tomcat
+      state: present
+  - name: ensure httpd is running
+    service:
+      name: tomcat 
+      state: started
+  - name: Open port 80 for http access
+    firewalld:
+      service: http
+      permanent: true
+      state: enabled
+  - name: Restart the firewalld service to load in the firewall changes
+    service: 
+      name: firewalld 
+      state: restarted
+      
+Ansible inventory:https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html#inventory-basics-formats-hosts-and-groups   
+Ansible Playbook: https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_intro.html#playbook-syntax
+
+
+MaridDB:
+--------
+---
+- name: This sets up an mariadb
+  hosts: node_2
+  tasks:
+  - name: Install mariadb packages 
+    yum:
+      name: mariadb-server
+      state: present
+  - name: ensure mariadb is running
+    service:
+      name: mariadb.service or mariadb
+      state: started
+  - name: Open port 80 for http access
+    firewalld:
+      service: http
+      permanent: true
+      state: enabled
+  - name: Restart the firewalld service to load in the firewall changes
+    service: 
+      name: firewalld 
+      state: restarted
+
+
+Multiple task at a time:
+=======================
+
+- name: Set up an httpd webserver, install Nagios and Python packages
+  hosts: all
+  tasks:
+  - name: Install apache packages 
+    yum:
+      name: httpd
+      state: present
+  - name: ensure httpd is running
+    service:
+      name: httpd 
+      state: started
+  - name: Open port 80 for http access
+    firewalld:
+      service: http
+      permanent: true
+      state: enabled
+  - name: Restart the firewalld service to load in the firewall changes
+    service: 
+      name: firewalld 
+      state: restarted
+  - name: Install Nagios packages
+    yum:
+      name:
+        - nagios
+        - nagios-plugins-all
+        - nrpe
+      state: present
+  - name: Install python packages
+    yum:
+      name:
+        - python3
+        - python3-pip
+      state: present
+
+
+
+#####Advanced#############
+# show all defined hosts
+[root@node ~]# ansible all --list-hosts
+  hosts (1):
+    node_2
+
+
+
+# show specific hosts in a group
+[root@dlp ~]# ansible target_servers --list-hosts
+ hosts (1):
+    node_2
+
+
+
+# run [uptime] command to [target_servers] group
+[root@dlp ~]# ansible target_servers -k -m command -a "uptime"
+SSH password:
+node_2 | CHANGED | rc=0 >>
+ 01:06:45 up 7 min,  3 users,  load average: 0.24, 0.11, 0.06
+
+
+# run command to show [/etc/shadow] to [target_servers] group
+[cent@dlp ~]$ ansible target_servers -k -m command -a "cat /etc/shadow" -b --ask-become-pass
+SSH password:
+BECOME password[defaults to SSH password]:
+node_2 | CHANGED | rc=0 >>
+root:$6$tjjWu0iFl8C8Ne6N$RHk7Wj.H4KvF6gueIoeagokdk9lpWI/j/dDXSz64fRj0cgLOdIyA8rwasjz1BPe.QZZ/84TBNTbrEfir3THiu/::0:99999:7:::
+bin:*:18353:0:99999:7:::
+daemon:*:18353:0:99999:7:::
+adm:*:18353:0:99999:7:::
+lp:*:18353:0:99999:7:::
+sync:*:18353:0:99999:7:::
+shutdown:*:18353:0:99999:7:::
+halt:*:18353:0:99999:7:::
+mail:*:18353:0:99999:7:::
+operator:*:18353:0:99999:7:::
+games:*:18353:0:99999:7:::
+ftp:*:18353:0:99999:7:::
+nobody:*:18353:0:99999:7:::
+systemd-network:!!:19462::::::
+dbus:!!:19462::::::
+polkitd:!!:19462::::::
+sshd:!!:19462::::::
+postfix:!!:19462::::::
+chrony:!!:19462::::::
+haproxy:!!:19462::::::
+apache:!!:19467::::::
+mysql:!!:19467::::::
+
+
+Task1:
+------
+
+change file permission from master to management node:
+I have a one conf file to the worker node, i want change permission file from the master node
+using adhock command 
+
+
+
+[cent@dlp ~]$ vi playbook_sample.yml
+[root@node ~]# cat playbook_sample.yml
+# target host or group
+- hosts: webservers
+  tasks:
+  # any task name
+  - name: Test Task
+    # use file module to set the file state
+    file:
+      path: /home/Arif.sh
+      owner: root
+      group: root
+      mode: 000
+
+
+worker node file:
+----------------
+
+[root@node3 home]# touch Arif.sh
+[root@node3 home]# vi Arif.sh
+[root@node3 home]# ls -la
+total 4
+drwxr-xr-x.  2 root root  21 Apr 21 01:20 .
+dr-xr-xr-x. 17 root root 224 Apr 14 20:27 ..
+-rw-r--r--.  1 root root  26 Apr 21 01:20 Arif.sh
+
+
+# run Playbook
+[root@node ~]# ansible-playbook playbook_sample.yml
+create a Playbook that Apache httpd is installed and running.
+PLAY [webservers] ************************************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************************
+ok: [node_2]
+
+TASK [Test Task] *************************************************************************************************************
+ok: [node_2]
+
+PLAY RECAP *******************************************************************************************************************
+node_2    
+
+
+# verify
+[cent@dlp ~]$ ansible webservers -m command -a "ls -l /home/"
+
+node_2 | CHANGED | rc=0 >>
+total 4
+----------. 1 root root 26 Apr 21 01:20 Arif.sh
+
+
+Task 2:
+------
+create a Playbook that Apache httpd is installed and running.
+
+
+[root@node ~]# cat vi httpd.yml
+cat: vi: No such file or directory
+- hosts: webservers
+  # use privilege (default : root)
+  become: yes
+  # method to use privilege
+  become_method: sudo
+  tasks:
+  # task settings
+  - name: httpd is installed
+    yum:
+      name: httpd
+      state: present
+  - name: httpd is running and enabled
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+
+
+
+
+[root@node ~]# ansible-playbook httpd.yml --ask-become-pass
+BECOME password:
+
+PLAY [webservers] ************************************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************************
+ok: [node_2]
+
+TASK [httpd is installed] ****************************************************************************************************
+ok: [node_2]
+
+TASK [httpd is running and enabled] ******************************************************************************************
+ok: [node_2]
+
+PLAY RECAP *******************************************************************************************************************
+node_2                     : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
+
+#verify
+[root@node ~]# ansible webservers  -m shell -a "/bin/systemctl status httpd | head -3" -b --ask-become-pass
+BECOME password:
+node_2 | CHANGED | rc=0 >>
+● httpd.service - The Apache HTTP Server
+   Loaded: loaded (/usr/lib/systemd/system/httpd.service; enabled; vendor preset: disabled)
+   Active: active (running) since Fri 2023-04-21 01:54:44 EDT; 1min 56s ago
+
+
+
+Task-3:
+-------
+Ansible : Use Playbook (variables)
+
+[root@node ~]# vi variable.yml
+
+- hosts: target_servers
+  become: yes
+  become_method: sudo
+  tasks:
+  - name: General packages are installed
+    yum:
+      name: "{{ packages }}"
+      state: present
+    vars:
+      packages:
+      - tar
+      - wget
+      - unzip
+    tags: General_Packages
+
+[cent@dlp ~]$ ansible-playbook variable.yml --ask-become-pass
+
+# verify
+[cent@dlp ~]$ ansible webservers -m shell -a "which tar; which wget; which unzip;"
+
+
+####Gathering Facts####
+
+#ansible node_2 -m setup
+
+#vi gathering.yml 
+
+- hosts: webservers
+  tasks:
+  - name: Refer to Gathering Facts
+    command: echo "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+    register: dist
+  - debug: msg="{{ dist.stdout }}"
+
+[root@node ~]# ansible-playbook gathering.yml
+
+
+
+Task-4:
+======
+create a Playbook which only if it does not exist [/var/www/html/index.html], create it on target hosts.
+
+
+[root@node ~]# vi index_file.yml
+[root@node ~]# cat index_file.yml
+# set boolean with [failed_when],
+# create [index.html] if result of boolean is [1]
+- hosts: webservers
+  become: yes
+  become_method: sudo
+  tasks:
+  - name: index file exists or not
+    shell: test -f /var/www/html/index.html
+    ignore_errors: true
+    register: file_exists
+    failed_when: file_exists.rc not in [0, 1]
+
+  - name: put index.html
+    shell: echo "httpd index" > /var/www/html/index.html
+    when: file_exists.rc == 1
+
+
+[root@node ~]# ansible-playbook index_file.yml --ask-become-pass
+
+
+#verify
+[root@node ~]# curl 192.168.217.131
+httpd index
+
+
+Task 5:
+======
+create a Playbook that [sshd] is restarted after editing [sshd_config].
+
+
+[root@node ~]# vi sshd.yml
+[root@node ~]# cat sshd.yml
+- hosts: webservers
+  become: yes
+  become_method: sudo
+  handlers:
+  - name: restart sshd
+    service: name=sshd state=restarted
+  tasks:
+  - lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '^PermitRootLogin'
+      line: 'PermitRootLogin yes'
+    notify: restart sshd
+    tags: Edit_sshd_config
+
+[root@node ~]#  ansible-playbook sshd.yml --ask-become-pass
+
+
+[root@node ~]# ansible webservers  -m command -a "grep '^PermitRootLogin' /etc/ssh/sshd_config" -b --ask-become-pass
+BECOME password:
+node_2 | CHANGED | rc=0 >>
+PermitRootLogin yes
+
+Task 6:
+======
+It's possible to include tasks or Playbooks from other Playbooks.
+If you'd like to include other tasks, write [include: ***] in [tasks] section
+
+
+[root@node ~]# vi task.yml
+
+[root@node ~]# cat task.yml
+# include [included.yml] under the [tasks] directory
+- hosts: webservers
+  become: yes
+  become_method: sudo
+  tasks:
+    - include: /root/tasks/include.yml
+
+
+
+[root@node ~]# mkdir tasks
+
+[root@node ~]# cd tasks
+[root@node tasks]# ls
+include.yml
+[root@node tasks]# cat include.yml
+# OK to set task definition only
+- name: General packages are installed
+  yum:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+    - tar
+    - wget
+    - unzip
+  tags: General_Packages
+
+
+ansible-playbook --syntax-check http.yml 
+ansible-playbook -C http.yml
+run playbook: ansible-playbook http.yml
+
+
+Task-7
+======
+For import other Playbooks, use [import_playbook].
+In additon to [1], include a Playbook that [httpd] is running.
+
+# import httpd.yml playbook this task.yml playbook 
+
+[root@node ~]# cat task.yml
+# include [included.yml] under the [tasks] directory
+- hosts: webservers
+  become: yes
+  become_method: sudo
+  tasks:
+    - include: /root/tasks/include.yml
+#include Playbook
+- import_playbook: httpd.yml
+
+
+# httpd.yml 
+
+[root@node ~]# cat httpd.yml
+- hosts: webservers
+  # use privilege (default : root)
+  become: yes
+  # method to use privilege
+  become_method: sudo
+  tasks:
+  # task settings
+  - name: httpd is installed
+    yum:
+      name: httpd
+      state: present
+  - name: httpd is running and enabled
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+
+
+ansible-playbook task.yml --ask-become-pass
+
+
+Task-8:
+======
+	
+This is the example of using the [Roles] feature.
+To use Roles, it's possible to include other tasks or Playbooks without writing [include] sentence.
+It's necessary to configure directory tree like follows to use Roles.
+The left image shows all tree, the right image shows an example of a Playbook on this example.
+
++--- playbook.yml                  +--- playbook_sample.yml
+|                                  |
++--- roles/                        +--- roles/
+     |                                  |
+     +--- role01/                       +--- ins_mariadb/
+          |                             |    |
+          +--- files/                   |    +--- vars/
+          |                             |    |    |
+          +--- templates/               |    |    +--- main.yml
+          |                             |    +--- tasks/
+          +--- tasks/                   |         |
+          |                             |         +--- main.yml
+          +--- handlers/                |
+          |                             +--- ins_nginx/
+          +--- vars/                              |
+          |                                       +--- files/
+          +--- defaults/                          |    |
+          |                                       |    +--- index.html
+          +--- meta/                              +--- vars/
+                                                  |    |
+                                                  |    +--- main.yml
+                                                  |
+                                                  +--- tasks/
+                                                       |
+                                                       +--- main.yml
+
+
+
+See: https://www.server-world.info/en/note?os=CentOS_8&p=ansible&f=8

@@ -1,0 +1,301 @@
+                                             Docker and Container 
+                                        ===========================
+
+
+
+Docker is a container engine
+
+------------------------------
+ container|contr2 |container 2|  
+------------------------------
+Docker-Container engine       |
+-------------------------------
+   OS                         |           
+------------------------------- 
+
+
+
+Automation:
+===========
+
+
+------------  <------------------------                                
+Docker engine|---------> |php 7         |
+------------             ---------------
+
+
+
+Manually:
+========                                                                                            push    
+----------         --------------                                                   ---------------   /-----> Test environment
+Dev team  |----->  |Docker Engine|==>create/build a Docker file,then commit/image -->|Docker images|                           
+-----------         -------------                                                   ----------------]\ ----------> Docker hub
+
+
+==> deploy the production server 
+
+
+
+
+
+-----------   pull php      ---------------  
+Docker Hub |<------------- |Docker engine |
+-----------  run command--->---------------
+                        \ Biuld a container images in Docker engine 
+
+
+
+
+
+
+
+-------------     ----------------------------------------
+ user        |---->[172.17.17.5:82]<-----[172.17.17.6:81] |
+--------------     Docker Engine[192.168.20.5:8080]       |
+                  ----------------------------------------
+
+
+
+Documents: https://docs.docker.com/engine/install/centos/
+https://hub.docker.com/
+docker --help
+
+docker -v 
+
+
+
+docker pull httpd [not needed]
+
+docker images 
+
+docker run -dit --name apache_server -p 81:80 httpd:latest [run+build]
+
+docker ps -a [see container]
+
+run browser==> host_ip:80 
+
+http://192.168.29.130:81[container port number]
+
+Aceess docker:
+==============
+
+
+docker start <container_id> ed2702162018
+docker exec -it ed2702162018 bash
+
+
+root@61c0ccfb8914:/usr/local/apache2/htdocs# ls
+index.html
+root@61c0ccfb8914:/usr/local/apache2/htdocs# vi index.html
+bash: vi: command not found
+root@61c0ccfb8914:/usr/local/apache2/htdocs# yum install vi
+bash: yum: command not found
+root@61c0ccfb8914:/usr/local/apache2/htdocs# cat index.html
+<html><body><h1>It works!</h1></body></html>
+root@61c0ccfb8914:/usr/local/apache2/htdocs#
+
+
+
+root@61c0ccfb8914:/# cd /etc
+root@61c0ccfb8914:/etc# ls
+adduser.conf            cron.daily      fstab      hosts         ldap           netconfig      profile    rc6.d        shells    update-motd.d
+alternatives            debconf.conf    gai.conf   init.d        libaudit.conf  nsswitch.conf  profile.d  rcS.d        skel      xattr.conf
+apt                     debian_version  group      issue         localtime      opt            rc0.d      resolv.conf  ssl
+bash.bashrc             default         group-     issue.net     login.defs     os-release     rc1.d      rmt          subgid
+bindresvport.blacklist  deluser.conf    gshadow    kernel        logrotate.d    pam.conf       rc2.d      security     subuid
+ca-certificates         dpkg            gss        ld.so.cache   mke2fs.conf    pam.d          rc3.d      selinux      systemd
+ca-certificates.conf    e2scrub.conf    host.conf  ld.so.conf    motd           passwd         rc4.d      shadow       terminfo
+cron.d                  environment     hostname   ld.so.conf.d  mtab           passwd-        rc5.d      shadow-      timezone
+root@61c0ccfb8914:/etc# cat os-release
+PRETTY_NAME="Debian GNU/Linux 11 (bullseye)"
+NAME="Debian GNU/Linux"
+VERSION_ID="11"
+VERSION="11 (bullseye)"
+VERSION_CODENAME=bullseye
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+root@61c0ccfb8914:/etc#
+
+
+
+
+Due: Docker file 
+share hosting 
+
+
+
+
+                     Docker Advanced
+                =========================     
+
+
+
+Micro-service==> Different service has different container 
+
+
+Most of the case multiple service run one operating system,that's the 
+problem,overcome the problem,container is come .
+
+Each service has different contain upper docker engine 
+
+Container Benefits:
+==================
+
+container size expandibility 
+
+
+|---------------------------
+|[ip: service ]-->[ip:service]|             
+|      |          |         |
+|[ip:service ]<--[ip:Service] |
+|                             |
+|----------------------------
+
+
+
+4 container service communicate with docker container network 
+
+wsl==>windows sub system for linux 
+
+
+
+Build Docker Image:
+===================
+
+|------------------------------        -----------                                     --------------------
+|  Apache   deploy web server |       |           |  Push  ------------                |                  |
+| /         /                 | ----->|Build Image|------>|           |                |                  |
+| Ubuntu -->Base Image                |------------       |Docker Hub | -------------->|Deployment server |
+|                             |                           |           |                |                  |
+|------------------------------                           --------------               |-------------------
+
+       Container/service
+
+
+
+ https://hub.docker.com/_/ubuntu
+ 
+remove docker images:docker rmi <image_id> 
+
+
+image to container:
+==================
+
+docker run -dit --name apache_arif -p 82:80 ubuntu  [pull+run{build}]
+also install e specific version using tag [details on doc: https://hub.docker.com/_/ubuntu]
+
+ docker exec -it 25c45d6ca49a bash
+
+ cat /etc/os-release
+ cat /etc/lsb-release
+
+apt list
+apt update 
+
+apt install apache2 
+
+
+
+service file:/etc/init.d 
+
+root@25c45d6ca49a:/# /etc/init.d/apache2 start
+root@25c45d6ca49a:/# /etc/init.d/apache2 status
+
+
+
+root@25c45d6ca49a:/var/www/html# ls
+index.html
+root@25c45d6ca49a:/var/www/html# rm index.html
+root@25c45d6ca49a:/var/www/html#
+
+root@25c45d6ca49a:/var/www/html# apt install nano -y
+
+
+root@25c45d6ca49a:/var/www/html# nano index.html
+root@25c45d6ca49a:/var/www/html#
+root@25c45d6ca49a:/var/www/html#
+root@25c45d6ca49a:/var/www/html# /etc/init.d/apache2 restart
+ * Restarting Apache httpd web server apache2                                                                                                       AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 172.17.0.2. Set the 'ServerName' directive globally to suppress this message
+
+exit
+
+
+search on browser: 
+
+host_ip:<image_port>[82]
+
+
+Now, Container to build image creation:
+---------------------------------------
+
+[root@node1 ~]# docker ps -a
+CONTAINER ID   IMAGE     COMMAND   CREATED       STATUS       PORTS                               NAMES
+25c45d6ca49a   ubuntu    "bash"    2 hours ago   Up 2 hours   0.0.0.0:82->80/tcp, :::82->80/tcp   apache_arif
+
+
+
+
+[root@node1 ~]# docker commit 25c45d6ca49a apache_ubuntu
+
+sha256:fff4f830d50445c2dc6dec175861cf29c86f245a62412da91a22ec382bce366a
+
+
+
+[root@node1 ~]# docker images
+REPOSITORY                  TAG       IMAGE ID       CREATED              SIZE
+apache_ubuntu               latest    fff4f830d504   About a minute ago   225MB
+
+
+Create repository on docker hub 
+
+
+[root@node1 ~]# docker login
+Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username: arifthewarriors
+Password:
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+
+
+
+[root@node1 ~]# docker images
+REPOSITORY                  TAG       IMAGE ID       CREATED         SIZE
+apache_ubuntu               latest    fff4f830d504   9 minutes ago   225MB
+ubuntu                      latest    a8780b506fa4   17 hours ago    77.8MB
+httpd                       latest    fe8735c23ec5   9 days ago      145MB
+hello-world                 latest    feb5d9fea6a5   13 months ago   13.3kB
+couchbase/centos7-systemd   latest    a7192f6d537a   3 years ago     411MB
+
+[root@node1 ~]# docker tag  fff4f830d504 arifthewarriors/apache_ubuntu:v1
+[root@node1 ~]#
+
+
+[root@node1 ~]# docker push arifthewarriors/apache_ubuntu:v1
+The push refers to repository [docker.io/arifthewarriors/apache_ubuntu]
+84da407a63ac: Preparing
+f4a670ac65b6: Preparing
+
+
+Docker file: works only one container
+
+Docker compose: multiple container works,docker compose include docker file 
+
+
+
+https://docs.docker.com/compose/compose-file/
+
+
+
+
+
+now using this image , to use my production server:
+----------------------------------------------------
+docker run -dit --name apache_arif -p 82:80 arifthewarriors/apache_ubuntu:v1
+
+docker ps -a 
+

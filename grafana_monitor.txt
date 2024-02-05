@@ -1,0 +1,28 @@
+work on: ubuntu server
+
+[prometheus]/[Agent:1 container]
+            \[Agent:2 container]
+
+
+Basically promethus fetch data over http but 
+all data should not possible to fetch,thats whay we use 
+extra plugin promethus nodeexporter all the agent node.
+
+
+promethus server communicate with node exporter then node exporter
+communicate needed agent  where is request from promethus server.
+After node exporter send data to promethus server.
+
+promethus data graphicall view==>grafana 
+
+
+promethus interact with grafana..
+
+
+
+first install prometheus, then install grafana in the same machine or 
+other machine as a container 
+
+
+
+
